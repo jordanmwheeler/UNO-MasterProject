@@ -1,0 +1,12 @@
+name: ForecastingApplication
+title: ForecastingApplication
+username:
+account: jordamwheeler
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 872414
+bundleId: 2019144
+url: https://jordamwheeler.shinyapps.io/ForecastingApplication/
+when: 1555524395.77279
+asMultiple: FALSE
+asStatic: FALSE
