@@ -1,23 +1,9 @@
 ### Loading packages
-# packages = c("shiny", "markdown", "shinythemes", "dplyr", "ggplot2", 
-#              "plotly", "tidyr", "kableExtra", "reshape2", "quantmod",
-#              "lubridate", "shinyWidgets", "Hmisc", "fGarch", "markdown",
-#              "shinycssloaders")
-# invisible(lapply(packages, library, character.only = TRUE))
-library(shiny)
-library(shinythemes)
-library(dplyr)
-library(ggplot2)
-library(plotly)
-library(tidyr)
-library(kableExtra)
-library(reshape2)
-library(quantmod)
-library(lubridate)
-library(shinyWidgets)
-library(Hmisc)
-library(fGarch)
-library(shinycssloaders)
+packages = c("shiny", "markdown", "shinythemes", "dplyr", "ggplot2", 
+             "plotly", "tidyr", "kableExtra", "reshape2", "quantmod",
+             "lubridate", "shinyWidgets", "Hmisc", "fGarch", "parallel",
+             "shinycssloaders")
+invisible(lapply(packages, library, character.only = TRUE))
 
 ##################################################
 ##################################################
@@ -322,19 +308,9 @@ function(input, output, session) {
     stockSymDF$Volume = scales::comma(stockSymDF$Volume)
     stockSymDF = stockSymDF[,c(7,1,2,3,4,5,6,8)]
     rownames(stockSymDF) = NULL
-    stockSymDF.dl <<- stockSymDF
     DT::datatable(stockSymDF, rownames = FALSE)  %>% 
       DT::formatStyle(colnames(stockSymDF),color = '#ffffff', backgroundColor = '#222222', fontWeight = 'bold')
   })
-  
-  output$daily.overview.dl <- downloadHandler(
-    filename = function() {
-      paste0(input$stockSymbol, "_StockData", '.csv')
-    },
-    content = function(con) {
-      write.csv(stockSymDF.dl, con, row.names = FALSE)
-    }
-  )
   
 #################################################
 ### Overview Page - IntraDaily
@@ -414,19 +390,9 @@ function(input, output, session) {
     stockSymDF$Volume = scales::comma(stockSymDF$Volume)
     stockSymDF = stockSymDF[,c(6,9,1,2,3,4,5,8,7)]
     rownames(stockSymDF) = NULL
-    intra.stockSymDF.dl <<- stockSymDF
     DT::datatable(stockSymDF[,1:8], rownames = FALSE)  %>% 
       DT::formatStyle(colnames(stockSymDF[,1:8]),color = '#ffffff', backgroundColor = '#222222', fontWeight = 'bold')
   })
-  
-  output$intra.overview.dl <- downloadHandler(
-    filename = function() {
-      paste0(input$intra.ov.stockSymbol, "_StockData", '.csv')
-    },
-    content = function(con) {
-      write.csv(intra.stockSymDF.dl, con, row.names = FALSE)
-    }
-  )
 
 #################################################
 ### InterDaily Forecasting
@@ -477,6 +443,7 @@ function(input, output, session) {
                    
                    stockSymDF.For$Return = log(stockSymDF.For$Close) - log(Lag(stockSymDF.For$Close))
                    stockSymDF.For = stockSymDF.For[complete.cases(stockSymDF.For),]
+                   cpus = detectCores()
                    
                    numPredictions = input$numForecast
                    numDay = numPredictions + (ceiling(numPredictions/7)*3)
@@ -554,6 +521,7 @@ function(input, output, session) {
                        
                        stockSymDF.For$Return = log(stockSymDF.For$Close) - log(Lag(stockSymDF.For$Close))
                        stockSymDF.For = stockSymDF.For[complete.cases(stockSymDF.For),]
+                       cpus = detectCores()
                        
                        numPredictions = input$numForecast
                        numDay = numPredictions + (ceiling(numPredictions/7)*3)
@@ -828,6 +796,7 @@ function(input, output, session) {
                    
                    intra.stockSymDF.For$Return = log(intra.stockSymDF.For$Close) - log(Lag(intra.stockSymDF.For$Close))
                    intra.stockSymDF.For = intra.stockSymDF.For[complete.cases(intra.stockSymDF.For),]
+                   cpus = detectCores()
                    
                    intraday.steps <- data.frame(steps = c("1min", "5min", "15min", "30min", "60min"), 
                                                 value = c(1, 5, 15, 30, 60))
@@ -911,6 +880,7 @@ function(input, output, session) {
                      
                      intra.stockSymDF.For$Return = log(intra.stockSymDF.For$Close) - log(Lag(intra.stockSymDF.For$Close))
                      intra.stockSymDF.For = intra.stockSymDF.For[complete.cases(intra.stockSymDF.For),]
+                     cpus = detectCores()
                      
                      intraday.steps <- data.frame(steps = c("1min", "5min", "15min", "30min", "60min"), 
                                                   value = c(1, 5, 15, 30, 60))
@@ -1083,10 +1053,8 @@ function(input, output, session) {
         intra.GARCHDF.tab$Close = scales::dollar(intra.GARCHDF.tab$Close)
         intra.GARCHDF.tab$Lower.Bound = replace(scales::dollar(intra.GARCHDF.tab$Lower.Bound), is.na(intra.GARCHDF.tab$Lower.Bound), "-")
         intra.GARCHDF.tab$Upper.Bound = replace(scales::dollar(intra.GARCHDF.tab$Upper.Bound), is.na(intra.GARCHDF.tab$Upper.Bound), "-")
-        intra.GARCHDF.tab$Date = as.Date(intra.GARCHDF.tab$Date.Time, format = "%Y-%m-%d")
-        intra.GARCHDF.tab$Time = paste0(format(intra.GARCHDF.tab$Date.Time, format="%H:%M:%S"), " EST")
-        DT::datatable(intra.GARCHDF.tab[,c(7,8,9,2,3,4,5)], rownames = FALSE, colnames = c("Weekday", "Date", "Time", "Close", "Lower Bound", "Upper Bound", "Actual/Forecast"))  %>% 
-          DT::formatStyle(columns = c("WeekDay", "Date", "Time", "Close", "Lower.Bound", "Upper.Bound", "Forecast"), color = '#ffffff', backgroundColor = '#222222', fontWeight = 'bold')
+        DT::datatable(intra.GARCHDF.tab[,c(7,1,2,3,4,5)], rownames = FALSE, colnames = c("Weekday", "Date and Time", "Close", "Lower Bound", "Upper Bound", "Actual/Forecast"))  %>% 
+          DT::formatStyle(columns = c("Weekday", "Date and Time", "Close", "Lower Bound", "Upper Bound", "Forecast"), color = '#ffffff', backgroundColor = '#222222', fontWeight = 'bold')
       }
       
       else if (input$intra.forecastDisplay.button == "Only Forecast"){
@@ -1096,10 +1064,8 @@ function(input, output, session) {
         intra.GARCHDF.tab$Lower.Bound = replace(scales::dollar(intra.GARCHDF.tab$Lower.Bound), is.na(intra.GARCHDF.tab$Lower.Bound), "-")
         intra.GARCHDF.tab$Upper.Bound = replace(scales::dollar(intra.GARCHDF.tab$Upper.Bound), is.na(intra.GARCHDF.tab$Upper.Bound), "-")
         intra.GARCHDF.tab <<- intra.GARCHDF.tab[intra.GARCHDF.tab$Forecast == "Forecast",]
-        intra.GARCHDF.tab$Date = as.Date(intra.GARCHDF.tab$Date.Time, format = "%Y-%m-%d")
-        intra.GARCHDF.tab$Time = paste0(format(intra.GARCHDF.tab$Date.Time, format="%H:%M:%S"), " EST")
-        DT::datatable(intra.GARCHDF.tab[intra.GARCHDF.tab$Forecast == "Forecast",c(7,8,9,2,3,4,5)], rownames = FALSE, colnames = c("Weekday", "Date", "Time", "Close", "Lower Bound", "Upper Bound", "Actual/Forecast"))  %>% 
-          DT::formatStyle(columns = c("WeekDay", "Date", "Time", "Close", "Lower.Bound", "Upper.Bound", "Forecast"), color = '#ffffff', backgroundColor = '#222222', fontWeight = 'bold')
+        DT::datatable(intra.GARCHDF.tab[intra.GARCHDF.tab$Forecast == "Forecast",c(7,1,2,3,4,5)], rownames = FALSE, colnames = c("Weekday", "Date and Time", "Close", "Lower Bound", "Upper Bound", "Actual/Forecast"))  %>% 
+          DT::formatStyle(columns = c("Weekday", "Date and Time", "Close", "Lower Bound", "Upper Bound", "Forecast"), color = '#ffffff', backgroundColor = '#222222', fontWeight = 'bold')
       }
     }
     
@@ -1113,10 +1079,8 @@ function(input, output, session) {
         intra.GARCHDF.tab$Close = scales::dollar(intra.GARCHDF.tab$Close)
         intra.GARCHDF.tab$Lower.Bound = replace(scales::dollar(intra.GARCHDF.tab$Lower.Bound), is.na(intra.GARCHDF.tab$Lower.Bound), "-")
         intra.GARCHDF.tab$Upper.Bound = replace(scales::dollar(intra.GARCHDF.tab$Upper.Bound), is.na(intra.GARCHDF.tab$Upper.Bound), "-")
-        intra.GARCHDF.tab$Date = as.Date(intra.GARCHDF.tab$Date.Time, format = "%Y-%m-%d")
-        intra.GARCHDF.tab$Time = paste0(format(intra.GARCHDF.tab$Date.Time, format="%H:%M:%S"), " EST")
-        DT::datatable(intra.GARCHDF.tab[,c(7,8,9,2,3,4,5)], rownames = FALSE, colnames = c("Weekday", "Date", "Time", "Close", "Lower Bound", "Upper Bound", "Actual/Forecast"))  %>% 
-          DT::formatStyle(columns = c("WeekDay", "Date", "Time", "Close", "Lower.Bound", "Upper.Bound", "Forecast"), color = '#ffffff', backgroundColor = '#222222', fontWeight = 'bold')
+        DT::datatable(intra.GARCHDF.tab[,c(7,1,2,3,4,5)], rownames = FALSE, colnames = c("Weekday", "Date and Time", "Close", "Lower Bound", "Upper Bound", "Actual/Forecast"))  %>% 
+          DT::formatStyle(columns = c("Weekday", "Date and Time", "Close", "Lower Bound", "Upper Bound", "Forecast"), color = '#ffffff', backgroundColor = '#222222', fontWeight = 'bold')
       }
       
       else if (input$intra.forecastDisplay.button == "Only Forecast"){
@@ -1126,10 +1090,8 @@ function(input, output, session) {
         intra.GARCHDF.tab$Lower.Bound = replace(scales::dollar(intra.GARCHDF.tab$Lower.Bound), is.na(intra.GARCHDF.tab$Lower.Bound), "-")
         intra.GARCHDF.tab$Upper.Bound = replace(scales::dollar(intra.GARCHDF.tab$Upper.Bound), is.na(intra.GARCHDF.tab$Upper.Bound), "-")
         intra.GARCHDF.tab <<- intra.GARCHDF.tab[intra.GARCHDF.tab$Forecast == "Forecast",]
-        intra.GARCHDF.tab$Date = as.Date(intra.GARCHDF.tab$Date.Time, format = "%Y-%m-%d")
-        intra.GARCHDF.tab$Time = paste0(format(intra.GARCHDF.tab$Date.Time, format="%H:%M:%S"), " EST")
-        DT::datatable(intra.GARCHDF.tab[intra.GARCHDF.tab$Forecast == "Forecast",c(7,8,9,2,3,4,5)], rownames = FALSE, colnames = c("Weekday", "Date", "Time", "Close", "Lower Bound", "Upper Bound", "Actual/Forecast"))  %>% 
-          DT::formatStyle(columns = c("WeekDay", "Date", "Time", "Close", "Lower.Bound", "Upper.Bound", "Forecast"), color = '#ffffff', backgroundColor = '#222222', fontWeight = 'bold')
+        DT::datatable(intra.GARCHDF.tab[intra.GARCHDF.tab$Forecast == "Forecast",c(7,1,2,3,4,5)], rownames = FALSE, colnames = c("Weekday", "Date and Time", "Close", "Lower Bound", "Upper Bound", "Actual/Forecast"))  %>% 
+          DT::formatStyle(columns = c("Weekday", "Date and Time", "Close", "Lower Bound", "Upper Bound", "Forecast"), color = '#ffffff', backgroundColor = '#222222', fontWeight = 'bold')
       }
     }
   })

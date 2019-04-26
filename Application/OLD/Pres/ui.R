@@ -1,22 +1,11 @@
-# packages = c("shiny", "shinythemes", "dplyr", "ggplot2", 
-#              "plotly", "tidyr", "kableExtra", "reshape2", "quantmod",
-#              "lubridate", "shinyWidgets", "Hmisc", "fGarch",
-#              "shinycssloaders", "colourpicker")
-# invisible(lapply(packages, library, character.only = TRUE))
-library(shiny)
-library(shinythemes)
-library(dplyr)
-library(ggplot2)
-library(plotly)
-library(tidyr)
-library(kableExtra)
-library(reshape2)
-library(quantmod)
-library(lubridate)
-library(shinyWidgets)
-library(Hmisc)
-library(fGarch)
-library(shinycssloaders)
+packages = c("shiny", "markdown", "shinythemes", "dplyr", "ggplot2", 
+             "plotly", "tidyr", "kableExtra", "reshape2", "quantmod",
+             "lubridate", "shinyWidgets", "Hmisc", "fGarch", "parallel",
+             "shinycssloaders", "colourpicker")
+invisible(lapply(packages, library, character.only = TRUE))
+
+
+shinythemes::themeSelector()
 
 tags$style(type="text/css",
            ".shiny-output-error { visibility: hidden; }",
@@ -34,7 +23,7 @@ tagList(
                             .fa { font-size: 20px; }
                             "))),
 
-navbarPage("Forecast Application", theme = shinytheme("darkly"),
+navbarPage("Praedicere", theme = shinytheme("darkly"),
            navbarMenu("Stock Overview",
                       tabPanel("Daily",
                                fluidPage(
@@ -49,7 +38,7 @@ navbarPage("Forecast Application", theme = shinytheme("darkly"),
                                  tags$br(),
                                  hr(style = "border-color: #ffffff;"),
                                  tags$br(),
-                                 fluidRow(column(4, offset = 4, align = "center", downloadButton("daily.overview.dl", "Download Stock Data"))),
+                                 tags$br(),
                                  tags$br(),
                                  tags$style(HTML(".dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing,.dataTables_wrapper .dataTables_paginate .paginate_button, .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
                                                  color: #ffffff !important;}")),
@@ -62,24 +51,14 @@ navbarPage("Forecast Application", theme = shinytheme("darkly"),
                       tabPanel("Intraday",
                                fluidPage(
                                  fluidRow(align = "center", column(4, align="center", textInput(inputId = "intra.ov.stockSymbol", label = "Stock Symbol:", value = "AAPL")),
-                                          column(4, align="center", dateRangeInput(inputId = "intra.ov.overviewDateRan", label = "Start and End Date:", start = Sys.Date(), end = Sys.Date()), selectInput("intra.ov.intraday.step", label = "Choose Intraday Step:", choices = c("1 min." = "1min", "5 min." = "5min", "15 min." = "15min", "30 min." = "30min", "60 min." = "60min"), selected = "15min")),
+                                          column(4, align="center", dateRangeInput(inputId = "intra.ov.overviewDateRan", label = "Start and End Date:", start = Sys.Date(), end = Sys.Date()), selectInput("intra.ov.intraday.step", label = "Choose Intraday Step:", choices = c("1 min." = "1min", "5 min." = "5min", "15 min." = "15min", "30 min." = "30min", "60 min." = "60min"))),
                                           column(4, align="center", selectInput(inputId = "intra.ov.overviewGraphic", label = "Graph:", choices = c("Candlestick" = "cs", "Time Series" = "ts")))),
                                  hr(style = "border-color: #ffffff;"),
-                                 tags$br(),
                                  withSpinner(plotly::plotlyOutput("intra.ov.overviewPlot")),
-                                 tags$br(),
-                                 tags$br(),
-                                 tags$br(),
                                  hr(style = "border-color: #ffffff;"),
-                                 tags$br(),
-                                 fluidRow(column(4, offset = 4, align = "center", downloadButton("intra.overview.dl", "Download Stock Data"))),
-                                 tags$br(),
                                  tags$style(HTML(".dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing,.dataTables_wrapper .dataTables_paginate .paginate_button, .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
                                                  color: #ffffff !important;}")),
-                                 DT::dataTableOutput("intra.ov.overviewTable"),
-                                 tags$br(),
-                                 tags$br(),
-                                 tags$br()
+                                 DT::dataTableOutput("intra.ov.overviewTable")
                                  ))),
            tabPanel("Daily Forecast",
                     fluidPage(
@@ -116,7 +95,7 @@ navbarPage("Forecast Application", theme = shinytheme("darkly"),
                       hr(style = "border-color: #ffffff;"),
                       tags$style(HTML(".dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing,.dataTables_wrapper .dataTables_paginate .paginate_button, .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
                                       color: #ffffff !important;}")),
-                      DT::dataTableOutput("intra.forecastTable"),
+                      withSpinner(DT::dataTableOutput("intra.forecastTable")),
                       hr(style = "border-color: #ffffff;")
                     )),
            tabPanel("", icon = icon("cog"), 

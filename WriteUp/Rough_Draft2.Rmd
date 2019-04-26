@@ -100,21 +100,19 @@ The ARMA+GARCH model uses the models from the above section meaning an ARMA+GARC
 Ret_t = log \bigg(\frac{Close_t}{Close_{t-1}}\bigg)
 \]
 
-Where, $Ret_t$ is the log return at time $t$; $Close_t$ and $Close_{t-1}$ is the closing price of the stock at time $t$ and time $t-1$.
+Where, $Ret_t$ is the log return at time $t$; $Close_t$ and $Close_{t-1}$ are the closing prices at time $t$ and time $t-1$.
 
 This means when we make a forecast using an ARMA+GARCH model, it is the log return not the close price. Somehow we need to convert the log return into a close price. We will show this by example. Suppose we train an ARMA + GARCH model on the log returns from time $1$ to time $t$ (i.e. we are modeling the data $Ret_1$, $Ret_2$,..., $Ret_t$). Our first forecast will be $\hat{Ret}_{t+1}$. We will need to convert $\hat{Ret}_{t+1}$ into a forecasted close price, $\hat{Close}_{t+1}$. Using the definiton of a log return, we will get the forecasted closed price at time $t+1$ through the following steps:
 
 \begin{equation*}
 \begin{aligned}
-&\hat{Ret}_{t+1} = log \bigg(\frac{\hat{Close}_{t+1}}{Close_{t}}\bigg) \\
-\text{iff. } &e^{\hat{Ret}_{t+1}} = \bigg(\frac{\hat{Close}_{t+1}}{Close_{t}}\bigg) \\
-\text{iff. } &\hat{Close}_{t+1} = e^{\hat{Ret}_{t+1}} * {Close_{t}} 
+&\hat{Ret}_{t+1} &&= log \bigg(\frac{\hat{Close}_{t+1}}{Close_{t}}\bigg) \\
+\text{iff. } &e^{\hat{Ret}_{t+1}} &&= \bigg(\frac{\hat{Close}_{t+1}}{Close_{t}}\bigg) \\
+\text{iff. } &\hat{Close}_{t+1} &&= e^{\hat{Ret}_{t+1}} * {Close_{t}} 
 \end{aligned}
 \end{equation*}
 
-Therefore, the forecasted close price at time $t+1$ is the close price at time $t$ multipled by the (natural) exponential of the forecasted log return at time $t+1$.
-
-For further information about the theory behind ARMA and GARCH modeling, refer to \textit{Time Series Analysis with Applications in R} by Jonathan D. Cryer and Kung-Sik Chang. 
+Therefore, the forecasted close price at time $t+1$ is the close price at time $t$ multipled by the (natural) exponential of the forecasted log return at time $t+1$. For further information about the theory behind ARMA and GARCH modeling, refer to \textit{Time Series Analysis with Applications in R} by Jonathan D. Cryer and Kung-Sik Chang. 
 
 # Application
 With the advancement in technology within the past 20 years, the use (and dare I say neccessity) of applications has increased. Applications allow technology and content experts to put their skills and knowledge in the hands of users who may not possess those certain skills. 
@@ -135,6 +133,85 @@ It is important to understand the basics of the automation process by Popivanov.
 
 ## Prediction
 This section is added due to an issue that occured while programming the application. With the ARMA+GARCH models, the standard prediction function outputs an error when trying to forecast more than 1 step out. To fix this issue, Dr. Swift provided me with his own custom prediction function that will not have an error when forecasting more than 1 step out for a ARMA+GARCH model. The prediction function not only provides the forecast, but it also provides the standard deviation of the forecast. This standard deviation can be used to show a confidence interval of the forecast, which is used to create error bars on the forecast in the output plots.
+
+## Application Guide
+Getting familiar with the application and documenting its abilities creates a guide that is crucial for the user to successfully use the application. We will look at snapshots of different features within the application and example what it is and how it works. You will notice that the design of each individual page is similar to one another, this was done on purpose to make the application more user friendly and easy to use. The application itself has four total pages which consist of two different style of pages: Overview Pages and Forecast Pages. Each of these two styles have two separate pages, one for Daily returns and the other for Intraday returns. In this guide section, we will focus on the Daily return pages for these two styles, however we will make note of how the Intraday pages differ (even though they are quite similar). 
+
+### Overview Pages
+
+The first thing we need to look at is the initial page when you open the application (Figure 2). When you first open the application you are taken to a page which is called the Daily Overview. This page is just a visualization page of the stock. When you open the application, it will automatically select the Apple Inc. (AAPL) stock. The date range will default to one month ago until current date. The graph which is shown will automatically default to the candlestick chart.
+
+```{r, echo=FALSE, out.width = '100%', fig.align='center', fig.cap="Shown here is Daily Overview. This is what the application will look like when launched.", fig.pos="H"}
+knitr::include_graphics("Images/OverviewPage.png")
+```   
+
+You will notice that this Daily Overview page has three main components: Input Panel, Graph Section, and Table Section. The Input Panel component will control what the outputs of the Graph and Table Sections (the concept of the user interface and server side working together). 
+
+The Overview Input Panel (Figure 3) contains information about the stock. There are three main inputs: Stock Symbol, Start and End Date, and Graph. The Stock Symbol is where the user inputs any stock symbol which is on the NYSE. This input is not case sensitive and will automatically default to "AAPL". The Start and End Date input is where the user puts the date range to view the history of a stock. The start date can go as far back as the user wants, however, most date is only goes back to the 2007s. If the user inputs a start date which is before the first date which has a value, then the output will automatically use the first date which has a value as the start. The end date can also go back however far the user wants (as long as the date is after the start date). The start date automatically defaults to a month from current date and the end date automatically defaults to current date. The Graph input is a selection input where the user can choose between a candlestick chart or time series line plot. The application automatically defaults to the candlestick chart.
+
+```{r, echo=FALSE, out.width = '100%', fig.align='center', fig.cap="Shown here is the Overview Input Panel. The user will specify inputs for the application.", fig.pos="H"}
+knitr::include_graphics("Images/OverviewInputs.png")
+```   
+
+The Overview Graph Section (Figure 4) is where the graph of the stock is displayed. Since the Graph input automatically defaults to a candlestick chart, this is what is shown. It is important to note that this graph section is JavaScript, which mean that it is interactive. The user is able to hover over the different bars to learn information about that specific date. The user is also able to zoom into different sections of the plot. To reset any zooming, the user must click the house icon in the upper right of the chart. 
+
+```{r, echo=FALSE, out.width = '100%', fig.align='center', fig.cap="Shown here is the Overview Graph Section, which is interactive.", fig.pos="H"}
+knitr::include_graphics("Images/OverviewGraph.png")
+```
+
+The Overview Table Section (Figure 5) is where a table of the data is displated. This table is for users to view the actual historical data easily. You will notice there is a download button. This will download the current stocks historical data given the date range (i.e. what is shown in the table). This table is also interactive, which means the user can do searches using the search bar, and the user can sort the table by different columns, which is defaulted to ascending order of date. 
+
+```{r, echo=FALSE, out.width = '100%', fig.align='center', fig.cap="Shown here is the Overview Table Section, which is interactive.", fig.pos="H"}
+knitr::include_graphics("Images/OverviewTable.png")
+```
+
+Underneath the Stock Overview tab, you will have an option between Daily and Intraday Overview. The application automatically defaults to the Daily Overview. The Intraday Overview is similar to the Daily Overview, however, there is an additional input for step. This input allows the user to change between different intraday steps (i.e. 1 min., 5 min., 15 min., 30 min., and 60 min.). The date range will automatically default to just current date. The rest of the Intraday Overview similar to the Daily Overview, thus we will not go over it in detail.
+
+### Forecast Pages
+
+The Forecast Pages (Daily Forecast and Intraday Forecast tabs) are the other important pages to explain. Since the Forecast Pages are similar, we will just discuss the Daily Forecast page. When you click the Daily Forecast tab, a page will be pulled up with just an input panel and some empty sections below the input panel (Figure 6). The user will need to interact with the input panel to get any outputs shown.
+
+```{r, echo=FALSE, out.width = '100%', fig.align='center', fig.cap="Shown here is the Daily Forecast Page when first clicked.", fig.pos="H"}
+knitr::include_graphics("Images/ForecastPage.png")
+```
+
+Similar to the Overview Pages, the Forecast Pages have three main componenets to its layout: Input Panel for forecasting information, a Graph Section to display the forecasts once a model is chosen, and a Table Section to display the date range historical information as well as the forecast information.
+
+The Forecast Input Panel (Figure 7) have different inputs, some of which are similar to the Overview Pages inputs, and action buttons. The inputs are Stock Symbol, Start and End Date, and Number of Forecasts. The action buttons are Auto GARCH, Model Performance, and Manual GARCH. Looking at the different inputs, the first thing the user needs to do is select a stock which they would like to forecast on. The appliaction once again defaults to Apple Inc. (AAPL). The user is able to enter any stock from the NYSE into the Stock Symbol input. The next thing the user will need to do is choose a date range which will be the training data for the ARMA+GARCH model. The Start and End Date inputs automatically defaults to a month previous of current until current date. It is important for the user to know that for more accurate forecasts, multiple years (around 4 to 5) of data is necessary for the model to be trained on. I would suggest that the user goes back until 2010 when making a forecast. The last input that the user has to specify is Number of Forecasts. This tells the application how many steps out (i.e. number of trading days for daily forecasting). The application automatically defaults to 1 forecast, which means it will forecast tomorrows close (or the next trading date after the specified end date). The user can choose as many forecasts as they would like, however, the more steps the forecast goes out, the less accurate they will be.
+
+```{r, echo=FALSE, out.width = '100%', fig.align='center', fig.cap="Shown here is the Forecast Input Panel. Users will interact with input panel to get desired forecasts and outputs", fig.pos="H"}
+knitr::include_graphics("Images/ForecastInput.png")
+```
+
+The Forecast Input Panel also consists of different action buttons. The first action button is Auto GARCH. Upon clicking this button, the application will do a grid search for the best ARMA+GARCH model (explained in the previous section). The Auto GARCH will model the specified stock symbol and use the date range as the training data and provide the specified number of forecasts. This process can take up to a minute or so but a spinning wheel and progress bar is provided to let the user know that the model is still training. Once, a model is chosen, the user will be able to click the Model Performance action button and this will open a popup with an R output of the model (Figure 8). This will tell the user which ARMA and GARCH parameters were chosen and the significance of each variable. 
+
+```{r, echo=FALSE, out.width = '100%', fig.align='center', fig.cap="Shown here is the Forecast Model Output. Shows the model which was chosen as the best.", fig.pos="H"}
+knitr::include_graphics("Images/ForecastOutput.png")
+```
+
+The last action button is the Manual GARCH. This is for more advanced useres who know the theory behind ARMA and GARCH modeling and want to select parameters outside the grid search. Upon clicking this button, a popup will appear (Figure 9), which will have four addition inputs: AR Parameter, MA Parameter, GARCH Parameter, and ARCH Parameter (these were explained in the previous section). Once the parameters are chosen, then the user can click the Forecast button and the model will use those parameters and display the associated output. If the user specifies parameters which are negative, the application will display an error message and tell the users to choose a non negative value for the parameters.
+
+```{r, echo=FALSE, out.width = '100%', fig.align='center', fig.cap="Shown here is the Forecast Model Output. Shows the model which was chosen as the best.", fig.pos="H"}
+knitr::include_graphics("Images/ManualForecast.png")
+```
+
+Once a model is chosen, from either the Auto GARCH or Manual GARCH methods, two outputs will appear below the Forecast Input Panel: Forecast Graph Output and Forecast Table Output. These outputs will clearly display the forecasted values for the user. The Forecast Graph Output will help visualize the forecasted values and the Forecast Table Output will show the exact values of the forecasts. 
+
+The Forecast Graph Output (Figure 10) shows the actual values from the given date range plus the forecasted values and their 95\% confidence interval. The solid blue line in the graph shows the actual values (actual values for the given date range), the solid green line shows the forecasted values (number of forecasts shown depends on what the users put in the Number of Forecast input, in this case it shows 10 forecasts), and the dashed green line shows the 95\% confidence interval upper and lower bounds of the closed price. It is important to note that this graph is interactive, meaning the user can hover over the lines to see the date and closing price and the user can zoom in on different sections of the graph. Any zooms can be reset by the house icon in the upper right.
+
+```{r, echo=FALSE, out.width = '100%', fig.align='center', fig.cap="Shown here is the Forecast Graph Output. Shows the forecast and a 95 percent confidence interval.", fig.pos="H"}
+knitr::include_graphics("Images/ForecastGraph.png")
+```
+
+The Forecast Table Output (Figure 11) shows the actual and forecasted values given the date range and number of forecasts from the Forecast Input Panel. You will notice there is a drop-down input which allows the user to choose whether the table will display the actual and forecasted values or just the forecasted values. Similarly to the Overview Pages, there is a download button. This will download a .csv file of the displayed table. The Forecast Table Output is also interactive, which means the user can do searches using the search bar, and the user can sort the table by different columns, which is defaulted to ascending order of date. 
+
+```{r, echo=FALSE, out.width = '100%', fig.align='center', fig.cap="Shown here is the Forecast Table Output. The table is interactive.", fig.pos="H"}
+knitr::include_graphics("Images/ForecastTable.png")
+```
+
+The Intraday Forecast page is similar to the above Daily Forecast page. The only difference is there an additional input for step. This input allows the user to change between different intraday steps (i.e. 5 min., 15 min., 30 min., and 60 min.), which is defualted to 5 min. The date range default changes to just current date. The rest of the Intraday Overview similar to the Daily Overview, thus we will not go over it in detail.
+
+The Overview and Forecast Pages consitute the entire application. The Overview Pages allow the users to do exploratory data analysis on different stocks in the NYSE. The Forecast Pages allow the users to easily model the data and make forecasts for future date values.
 
 # Performance
 
@@ -249,7 +326,7 @@ masterDF3 = masterDF2 %>%
 
 ### Apple (AAPL)
 
-The below table shows...
+Apple is a frequently traded stock (high volume) on the NYSE. Using the the performance methodology from the previous section we get the following results (Table 1).
 
 ```{r, echo=FALSE, warning=FALSE}
 aapl = masterDF3[masterDF3$Stock == "aapl", c(1,3,4,5,6)]
@@ -267,7 +344,7 @@ kable(aapl, "latex", caption = "Apple Inc. (AAPL) Automated Stock Performance", 
   row_spec(6, bold = TRUE)
 ```
 
-As you **can** see...
+
 
 ### Amazon (AMZN)
 
