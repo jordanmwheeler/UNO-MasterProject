@@ -368,7 +368,7 @@ sum(masterDF2$ave==1)
 
 
 #########
-stockSymDF.For = getSymbols("DIA", src='yahoo', env = NULL)
+stockSymDF.For = getSymbols("GE", src='yahoo', env = NULL)
 date_vals = index(stockSymDF.For)
 stockSymDF.For = data.frame(stockSymDF.For)
 colnames(stockSymDF.For) = c("Open", "High", "Low", "Close", "Volume", "Adjusted")
@@ -379,12 +379,12 @@ stockSymDF.For = stockSymDF.For[,c(7,1:6)]
 
 ggplot(stockSymDF.For, aes(x = Date, y = Close)) + 
   geom_line(color = "steelblue") +
-  ggtitle("DIA's Stock\n") +
+  ggtitle("AAPL's Stock\n") +
   theme_minimal() +
   scale_y_continuous("Close Price\n", labels = scales::dollar_format()) +
   xlab("\nDate") +
   theme(plot.title = element_text(color="#666666", face="bold", size=18)) +
-  theme(axis.title = element_text(color="#666666", face="bold", size=14, margin= margin(t=1, r=1, b=1, l=1))) +
+  theme(axis.title = element_text(color="#666666", face="bold", size=14)) +
   theme(axis.text = element_text(color="#666666", size=10)) +
   theme(plot.title = element_text(hjust = .5))
 
